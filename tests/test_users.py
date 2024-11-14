@@ -3,13 +3,6 @@ from http import HTTPStatus
 from fast_zero.schemas import UserPublic
 
 
-def test_read_root_deve_retornar_ok_e_ola_mundo(client):
-    response = client.get('/')
-
-    assert response.status_code == HTTPStatus.OK
-    assert response.json() == {'message': 'Olá Mundo!'}
-
-
 def test_create_user(client):
     response = client.post(
         '/users/',
@@ -20,9 +13,7 @@ def test_create_user(client):
         },
     )
 
-    # Voltou status code correto?
     assert response.status_code == HTTPStatus.CREATED
-    # validação UserPublic
     assert response.json() == {
         'username': 'testusername',
         'email': 'test@test.com',
@@ -70,3 +61,13 @@ def test_delete_user(client, user, token):
     )
 
     assert response.json() == {'message': 'User deleted'}
+
+
+def test_delete_wrong_user(client, user, token):
+    response = client.delete(
+        f'/users/{user.id + 1}',
+        headers={'Authorization': f'Bearer {token}'},
+    )
+
+    assert response.status_code == HTTPStatus.FORBIDDEN
+    assert response.json() == {'detail': 'Not enough permissions'}
